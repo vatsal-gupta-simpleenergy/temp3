@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: business-tools-stage
+  name: testride-backend-stage-deployment
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: testride-backend-stage
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: testride-backend-stage
+      # annotations:
+      # vault.hashicorp.com/agent-inject: "true"
+      # vault.hashicorp.com/role: "business-tools-prod"
+      # vault.hashicorp.com/agent-inject-secret-.env: "secret/data/business-tools/testride_be/config"
+      # vault.hashicorp.com/agent-inject-template-.env: |
+      # {{- with secret "secret/data/business-tools/testride_be/config" -}}
+      # {{- range $k, $v := .Data.data -}}
+      # {{ $k }}="{{ $v }}"
+      # {{ end -}}
+      # {{- end }}
+    spec:
+      # serviceAccountName: business-tools-vault-sa
+      containers:
+        - name: testride-backend-stage-container
+          image: 392698013629.dkr.ecr.us-east-1.amazonaws.com/se-testride-backend-stage-eks:v1.0.0-rc.30
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4000
+          # command: ["/bin/sh"]
+          # args: ["-c", "cp /vault/secrets/.env /usr/src/app/.env && npm run start"]
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "512Mi"
+            requests:
+              cpu: "50m"
+              memory: "256Mi"
+          envFrom:
+            - configMapRef:
+                name: testride-backend-stage-configmap
+          volumeMounts:
+            - mountPath: /usr/src/app/.env
+              name: testride-backend-stage-config-volume
+              subPath: .env
+      volumes:
+        - name: testride-backend-stage-config-volume
+          configMap:
+            name: testride-backend-stage-configmap
