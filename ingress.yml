@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: business-tools-stage
+  name: testride-backend-stage-ingress
+  annotations:
+    alb.ingress.kubernetes.io/group.name: "shared-alb"
+    alb.ingress.kubernetes.io/subnets: subnet-02335459e4c59638a,subnet-077f78459cc64f2b8
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/success-codes: "200-499"
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:392698013629:certificate/44244298-66bd-415c-b93c-fb428803c792
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+spec:
+  ingressClassName: alb
+  rules:
+    - host: testride-backend-stage.simpleenergy.in
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: testride-backend-stage-service
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - testride-backend-stage.simpleenergy.in
